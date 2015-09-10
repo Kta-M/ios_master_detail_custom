@@ -13,7 +13,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
-
+    
+    var currentTimestamp: NSDate? = nil
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -25,7 +26,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         // SplitViewのときのMasterを呼び出すボタン名
         self.title = "一覧"
         // Masterのタイトル
-        self.navigationItem.title = "プロジェクト一覧"
+        self.navigationItem.title = "データ一覧"
     }
 
     override func viewDidLoad() {
@@ -73,12 +74,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
+            let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
+            controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
+            controller.navigationItem.leftItemsSupplementBackButton = true
             if let indexPath = self.tableView.indexPathForSelectedRow() {
-            let object = self.fetchedResultsController.objectAtIndexPath(indexPath) as! NSManagedObject
-                let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
+                let object = self.fetchedResultsController.objectAtIndexPath(indexPath) as! NSManagedObject
                 controller.detailItem = object
-                controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
-                controller.navigationItem.leftItemsSupplementBackButton = true
+                self.currentTimestamp = object.valueForKey("timeStamp") as? NSDate
             }
         }
     }
@@ -184,6 +186,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             case .Insert:
                 tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
             case .Delete:
+                // 分割表示を行なっていて、選択中の項目が削除されたらDetailViewを非選択状態に
+                let collection = UITraitCollection(horizontalSizeClass: .Regular)
+                if traitCollection.containsTraitsInCollection(collection) {
+                    if anObject.valueForKey("timeStamp") as? NSDate == self.currentTimestamp {
+                        self.performSegueWithIdentifier("showDetail", sender: self)
+                    }
+                }
                 tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
             case .Update:
                 self.configureCell(tableView.cellForRowAtIndexPath(indexPath!)!, atIndexPath: indexPath!)

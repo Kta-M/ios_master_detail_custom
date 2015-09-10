@@ -11,7 +11,7 @@ import UIKit
 class DetailViewController: UIViewController {
 
     @IBOutlet weak var detailDescriptionLabel: UILabel!
-
+    @IBOutlet weak var sampleButton: UIButton!
 
     var detailItem: AnyObject? {
         didSet {
@@ -26,7 +26,19 @@ class DetailViewController: UIViewController {
             if let label = self.detailDescriptionLabel {
                 label.text = detail.valueForKey("timeStamp")!.description
             }
+            let timestamp = detail.valueForKey("timeStamp")!.description
+            self.sampleButton.enabled = true
+            self.detailDescriptionLabel.hidden = false
+            self.detailDescriptionLabel.text = timestamp
+            self.view.userInteractionEnabled  = true
+            self.navigationItem.title = timestamp
         }
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.view.userInteractionEnabled  = false
+        self.navigationItem.title = "選択されていません"
     }
 
     override func viewDidLoad() {
