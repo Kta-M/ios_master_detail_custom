@@ -21,12 +21,21 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             self.clearsSelectionOnViewWillAppear = false
             self.preferredContentSize = CGSize(width: 320.0, height: 600.0)
         }
+        
+        // SplitViewのときのMasterを呼び出すボタン名
+        self.title = "一覧"
+        // Masterのタイトル
+        self.navigationItem.title = "プロジェクト一覧"
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.navigationItem.leftBarButtonItem = self.editButtonItem()
+        
+        // NavigationViewのときのMasterを呼び出すボタン設定
+        let backButton = UIBarButtonItem(title: "一覧", style: UIBarButtonItemStyle.Plain, target: nil, action: nil)
+        self.navigationItem.backBarButtonItem = backButton;
 
         let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
         self.navigationItem.rightBarButtonItem = addButton
