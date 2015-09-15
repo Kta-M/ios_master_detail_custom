@@ -14,7 +14,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
     
-    var currentTimestamp: NSDate? = nil
+    var currentTimestamp: NSDate? = nil     // 選択中の項目のタイムスタンプ
+    var deletedCurrentObject: Bool = false  // 選択中の項目が削除された
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -123,7 +124,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
-            let object = self.fetchedResultsController.objectAtIndexPath(indexPath) as! NSManagedObject
+        let object = self.fetchedResultsController.objectAtIndexPath(indexPath) as! NSManagedObject
         cell.textLabel!.text = object.valueForKey("timeStamp")!.description
     }
 
@@ -186,11 +187,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             case .Insert:
                 tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
             case .Delete:
-                // 分割表示を行なっていて、選択中の項目が削除されたらDetailViewを非選択状態に
-                let collection = UITraitCollection(horizontalSizeClass: .Regular)
-                if traitCollection.containsTraitsInCollection(collection) {
-                    if anObject.valueForKey("timeStamp") as? NSDate == self.currentTimestamp {
-                        self.performSegueWithIdentifier("showDetail", sender: self)
+                // 分割表示を行なっていて、選択中の項目が削除されたらフラグを立てておく
+                var window :UIWindow = UIApplication.sharedApplication().keyWindow!
+                if let split = window.rootViewController as? UISplitViewController {
+                    if split.collapsed == false {
+                        if anObject.valueForKey("timeStamp") as? NSDate == self.currentTimestamp {
+                            self.deletedCurrentObject = true
+                        }
                     }
                 }
                 tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
@@ -206,6 +209,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
         self.tableView.endUpdates()
+        
+        // 分割表示時に選択中の項目が削除された
+        if (self.deletedCurrentObject == true) {
+            self.performSegueWithIdentifier("showDetail", sender: self)
+        }
+        self.deletedCurrentObject = false
     }
 
     /*
