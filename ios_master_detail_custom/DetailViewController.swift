@@ -27,9 +27,8 @@ class DetailViewController: UIViewController {
             if let label = self.detailDescriptionLabel {
                 label.text = timestamp
             }
-            self.sampleButton.enabled = true
-            self.detailDescriptionLabel.hidden = false
             self.detailDescriptionLabel.text = timestamp
+            self.sampleButton.enabled = true
             self.view.userInteractionEnabled  = true
             self.navigationItem.title = timestamp
         }
